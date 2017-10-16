@@ -41,7 +41,7 @@ public class homework{
 				System.out.print('\n');
 			}
 			System.out.print("Gain: "+node.Gain+"\n");
-			//System.out.print(node.getLevel()+"\n");
+			System.out.print(node.getLevel()+"\n");
 		}
 		return retNode;
 	}
@@ -103,11 +103,66 @@ public class homework{
 		
 		Node InitNode=new Node(InitState);
 		System.out.println(InitNode.getLevel());
-		
+		// node.getChildNodes();
+		// for(int i=0;i<N;i++){
+		// 	for(int j=0;j<N;j++){
+		// 		System.out.print(node.childNodes.get(0).state[i][j]+" ");
+		// 	}
+		// 	System.out.print('\n');
+		// }
+		// System.out.print("Gain: "+node.childNodes.get(0).Gain);
+		// System.out.print('\n');
+		// node.childNodes.get(0).getGainDiff();
+		// System.out.print("Gain Diff: "+node.childNodes.get(0).gainDiff);
+		// System.out.print('\n');
+		// System.out.print('\n');
+
+		// node.childNodes.get(0).getChildNodes();
+		// for(int i=0;i<N;i++){
+		// 	for(int j=0;j<N;j++){
+		// 		System.out.print(node.childNodes.get(0).childNodes.get(0).state[i][j]+" ");
+		// 	}
+		// 	System.out.print('\n');
+		// }
+		// System.out.print("Gain: "+node.childNodes.get(0).childNodes.get(0).Gain);
+		// System.out.print('\n');
+		// node.childNodes.get(0).childNodes.get(0).getGainDiff();
+		// System.out.print("Gain Diff: "+node.childNodes.get(0).childNodes.get(0).gainDiff);
+		// System.out.print('\n');
+		// System.out.print('\n');
 		
 		Node node=abs(InitNode);
 		System.out.print(node.lastChoice[0]+"  "+node.lastChoice[1]);
-		
+		// node.getChildNodes();
+		// System.out.print(node.childNodes.size());
+		// System.out.print("\n\n");
+		// for(int k=0;k<node.childNodes.size();k++){
+		// 	for(int i=0;i<N;i++){
+		// 		for(int j=0;j<N;j++){
+		// 			System.out.print(node.childNodes.get(k).state[i][j]+" ");
+		// 		}
+		// 		System.out.print('\n');
+		// 	}
+		// 	System.out.print("Gain: "+node.childNodes.get(k).Gain);
+		// 	System.out.print('\n');
+		// 	System.out.print('\n');
+		// }
+		// dfs(4,1,component,InitState,node);
+		// node.delCompo();
+		// for(int i=0;i<N;i++){
+		// 	for(int j=0;j<N;j++){
+		// 		System.out.print(InitState[i][j]+" ");
+		// 	}
+		// 	System.out.print('\n');
+		// }
+		// System.out.print('\n');
+		// for(int i=0;i<N;i++){
+		// 	for(int j=0;j<N;j++){
+		// 		System.out.print(node.state[i][j]+" ");
+		// 	}
+		// 	System.out.print('\n');
+		// }
+		// System.out.print(node.Gain);
 	}
 }
 
