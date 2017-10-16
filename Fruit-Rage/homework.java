@@ -6,38 +6,6 @@ public class homework{
 	static int P=0; //Fruit Types
 	static float T=0;
 
-	public static void dfs(int x, int y, byte[][] component, char[][] state,Node node){
-		component[x][y]=-1;
-		node.state[x][y]='X';
-		node.Gain++;
-		// for(int i=x;i<N;i++){
-		// 	if(node.state[i][y]=='X'){
-		// 		for(int j=0;j<i;j++){
-		// 			node.state[i-j][y]=node.state[i-j-1][y];
-		// 		}
-		// 		node.state[0][y]='*';
-		// 	}
-		// }
-		
-		char type=state[x][y];
-	
-		if(x-1>=0&&state[x-1][y]==type&&component[x-1][y]!=-1){
-			dfs(x-1,y,component,state,node);
-		}
-	
-		if(y-1>=0&&state[x][y-1]==type&&component[x][y-1]!=-1){
-			dfs(x,y-1,component,state,node);
-		}
-		
-		if(x+1<N&&state[x+1][y]==type&&component[x+1][y]!=-1){
-			dfs(x+1,y,component,state,node);
-		}
-
-		if(y+1<N&&state[x][y+1]==type&&component[x][y+1]!=-1){
-			dfs(x,y+1,component,state,node);
-		}
-	}
-
 	public static void main(String[] args) throws IOException{
 		BufferedReader br=new BufferedReader(new FileReader("./input.txt"));
 		N=Integer.parseInt(br.readLine());
@@ -54,9 +22,24 @@ public class homework{
 		}
 		br.close();
 
-		// byte[][] component=new byte[N][N];
+
+		//byte[][] component=new byte[N][N];
 		// Node node=new Node(InitState);
-		// dfs(7,7,component,InitState,node);
+		// node.getChildNodes();
+		// System.out.print(node.childNodes.size());
+		// System.out.print("\n\n");
+		// for(int k=0;k<node.childNodes.size();k++){
+		// 	for(int i=0;i<N;i++){
+		// 		for(int j=0;j<N;j++){
+		// 			System.out.print(node.childNodes.get(k).state[i][j]+" ");
+		// 		}
+		// 		System.out.print('\n');
+		// 	}
+		// 	System.out.print("Gain: "+node.childNodes.get(k).Gain);
+		// 	System.out.print('\n');
+		// 	System.out.print('\n');
+		// }
+		// dfs(4,1,component,InitState,node);
 		// node.delCompo();
 		// for(int i=0;i<N;i++){
 		// 	for(int j=0;j<N;j++){
@@ -105,11 +88,13 @@ class Node{
 
 	public void getChildNodes(){
 		component=new byte[size][size];
+		this.childNodes=new ArrayList<Node>();
 		for(int i=0;i<size;i++){
 			for(int j=0;j<size;j++){
 				if(state[i][j]=='*'){
 					component[i][j]=-1;
-				}else if(component[i][j]!=-1){
+				}
+				if(component[i][j]!=-1){
 					Node node=new Node(size);
 					node.parentNode=this;
 					node.state=this.stateClone(this.state);
@@ -122,7 +107,7 @@ class Node{
 
 					if(this.maxNode==true)
 						node.maxNode=false;
-					childNodes.add(node);
+					this.childNodes.add(node);
 				}
 			}
 		}
@@ -132,10 +117,6 @@ class Node{
 		component[x][y]=-1;
 		node.state[x][y]='X';
 		node.Gain++;
-		for(int i=0;i<x;i++){
-			node.state[x-i][y]=node.state[x-i-1][y];
-		}
-		node.state[0][y]='*';
 		char type=state[x][y];
 	
 		if(x-1>=0&&state[x-1][y]==type&&component[x-1][y]!=-1){
