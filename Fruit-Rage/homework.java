@@ -6,6 +6,16 @@ public class homework{
 	static int P=0; //Fruit Types
 	static float T=0;
 
+	public static void levelControl(int n, Node node){
+		n--;
+		node.getChildNodes();
+		if(n!=0){
+			for(Node x:node.childNodes){
+				levelControl(n, x);
+			}
+		}
+	}
+
 	public static boolean terminalTest(Node node){
 		if(node.childNodes==null||node.childNodes.size()==0){
 			node.getGainDiff();
@@ -22,8 +32,9 @@ public class homework{
 		Node retNode=null;
 		node.gainDiff=Integer.MIN_VALUE;
 		for(Node n:node.childNodes){
-			if(node.gainDiff<minValue(n,a,b).gainDiff){
-				node.gainDiff=minValue(n,a,b).gainDiff;
+			int minGain=minValue(n,a,b).gainDiff;
+			if(node.gainDiff<minGain){
+				node.gainDiff=minGain;
 				retNode=n;
 				if(node.gainDiff>=b){
 					return retNode;
@@ -33,20 +44,6 @@ public class homework{
 				}
 			}
 		}
-		// if(retNode==null){
-		// 	for(int i=0;i<N;i++){
-		// 		for(int j=0;j<N;j++){
-		// 			System.out.print(node.state[i][j]+" ");
-		// 		}
-		// 		System.out.print('\n');
-		// 	}
-		// 	System.out.println("Gain: "+node.Gain);
-		// 	System.out.println("Level: "+node.getLevel());
-		// 	System.out.println("Child Nodes: "+node.childNodes.size());
-		// 	System.out.println("Min Child Nodes: "+minValue(node.childNodes.get(4), a, b).gainDiff);
-		// 	//Node failNode=minValue(n, a, b);
-
-		// }
 		return retNode;
 	}
 
@@ -58,8 +55,9 @@ public class homework{
 		}
 		node.gainDiff=Integer.MAX_VALUE;
 		for(Node n:node.childNodes){
-			if(node.gainDiff>maxValue(n,a,b).gainDiff){
-				node.gainDiff=maxValue(n,a,b).gainDiff;
+			int maxGain=maxValue(n,a,b).gainDiff;
+			if(node.gainDiff>maxGain){
+				node.gainDiff=maxGain;
 				retNode=n;
 				if(node.gainDiff<=a){
 					return retNode;
@@ -74,21 +72,12 @@ public class homework{
 	}
 
 	public static Node abs(Node node){
-		node.getChildNodes();
-		for(Node m: node.childNodes){
-			m.getChildNodes();
-			for(Node n: m.childNodes){
-				n.getChildNodes();
-				// for(Node o:n.childNodes){
-				// 	o.getChildNodes();
-				// }
-			}
-		}
+		levelControl(3, node);
 		return maxValue(node, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
 	public static void main(String[] args) throws IOException{
-		BufferedReader br=new BufferedReader(new FileReader("./input1.txt"));
+		BufferedReader br=new BufferedReader(new FileReader("./input3.txt"));
 		N=Integer.parseInt(br.readLine());
 		P=Integer.parseInt(br.readLine());
 		T=Float.parseFloat(br.readLine());
@@ -104,15 +93,9 @@ public class homework{
 		br.close();
 		
 		Node InitNode=new Node(InitState);
-
 		
 		Node node=abs(InitNode);
 		node.print();
-		//InitNode.getChildNodes();
-		//InitNode.childNodes.get(0).print();
-		//System.out.print(node.lastChoice[0]+"  "+node.lastChoice[1]);
-
-		
 	}
 }
 
@@ -127,7 +110,6 @@ class Node{
 	public int size=0;
 	public Node parentNode=null;
 	public ArrayList<Node> childNodes=null;
-	public ArrayList<int[]> Collapse=null;
 
 	public Node(int size){
 		this.size=size;
@@ -161,7 +143,6 @@ class Node{
 					node.lastChoice=new int[2];
 					node.lastChoice[0]=i;
 					node.lastChoice[1]=j;
-					node.Collapse=new ArrayList<int[]>();
 					dfs(i,j,component,node);
 					node.Gain=node.Gain*node.Gain;
 					node.delCompo();
@@ -170,8 +151,7 @@ class Node{
 						node.maxNode=false;
 					}else{
 						node.maxNode=true;
-					}
-						
+					}	
 					this.childNodes.add(node);
 				}
 			}
@@ -180,12 +160,8 @@ class Node{
 
 	public void dfs(int x, int y, byte[][] component, Node node){
 		component[x][y]=-1;
-		// node.state[x][y]='X';
-
-		int[] X={x,y};
-		node.Collapse.add(X);
+		node.state[x][y]='X';
 		
-
 		node.Gain++;
 		char type=state[x][y];
 	
@@ -217,27 +193,15 @@ class Node{
 	}
 
 	public void delCompo(){
-		// for(int i=0;i<size;i++){
-		// 	for(int j=0;j<size;j++){
-		// 		if(state[i][j]=='X'){
-		// 			for(int k=0;k<i;k++){
-		// 				state[i-k][j]=state[i-k-1][j];
-		// 			}
-		// 			state[0][j]='*';
-		// 		}
-		// 	}
-		// }
-		
-		int x=0;
-		int y=0;
-		for(int i=0;i<Collapse.size();i++){
-			x=Collapse.get(i)[0];
-			y=Collapse.get(i)[1];
-			//System.out.println(x+" "+y);
-			for(int j=0;j<x;j++){
-				state[x-j][y]=state[x-j-1][y];
+		for(int i=0;i<size;i++){
+			for(int j=0;j<size;j++){
+				if(state[i][j]=='X'){
+					for(int k=0;k<i;k++){
+						state[i-k][j]=state[i-k-1][j];
+					}
+					state[0][j]='*';
+				}
 			}
-			state[0][y]='*';
 		}
 	}
 
@@ -252,16 +216,15 @@ class Node{
 	}
 
 	public void getGainDiff(){
-		//Node a=this;
-		gainDiff=Gain;
-		// while(a.parentNode!=null){
-		// 	if(a.maxNode){
-		// 		gainDiff=gainDiff-a.Gain;
-		// 	}else{
-		// 		gainDiff=gainDiff+a.Gain;
-		// 	}
-		// 	a=a.parentNode;
-		// }
+		Node a=this;
+		while(a.parentNode!=null){
+			if(a.maxNode){
+				gainDiff=gainDiff-a.Gain;
+			}else{
+				gainDiff=gainDiff+a.Gain;
+			}
+			a=a.parentNode;
+		}
 	}
 
 	public int getLevel(){
@@ -274,12 +237,30 @@ class Node{
 		return i;
 	}
 
-	public void print(){
-		for(int i=0;i<size;i++){
-			for(int j=0;j<size;j++){
-				System.out.print(state[i][j]+" ");
+	public String getString(){
+		StringBuilder sb=new StringBuilder();
+		for(int i=0;i<this.size;i++){
+			for(int j=0;j<this.size;j++){
+				sb.append(this.state[i][j]);
 			}
-			System.out.println();
+			sb.append("\n");
 		}
+		return sb.toString();
+	}
+
+	public void print() throws IOException{
+		BufferedWriter bw=new BufferedWriter(new FileWriter("./output.txt"));
+		bw.write((char)(lastChoice[1]+65));
+		bw.write(Integer.toString(lastChoice[0]+1)+"\n");
+		bw.write(this.getString());
+		bw.close();
+
+		// for(int i=0;i<size;i++){
+		// 	for(int j=0;j<size;j++){
+		// 		System.out.print(state[i][j]+" ");
+		// 	}
+		// 	System.out.println();
+		// }
+		// System.out.println("Gain: "+this.Gain);
 	}
 }
