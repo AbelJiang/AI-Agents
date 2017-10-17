@@ -5,19 +5,15 @@ public class homework{
 	static int N=0; //Board Size
 	static int P=0; //Fruit Types
 	static float T=0;
+	static int level=0;
 
 	public static void levelControl(int n, Node node){
-		n--;
 		node.getChildNodes();
-		if(n!=0){
-			for(Node x:node.childNodes){
-				levelControl(n, x);
-			}
-		}
+		level=n;
 	}
 
 	public static boolean terminalTest(Node node){
-		if(node.childNodes==null||node.childNodes.size()==0){
+		if(node.getLevel()==level||node.childNodes.size()==0){
 			node.getGainDiff();
 			return true;
 		}else{
@@ -32,6 +28,7 @@ public class homework{
 		Node retNode=null;
 		node.gainDiff=Integer.MIN_VALUE;
 		for(Node n:node.childNodes){
+			n.getChildNodes();
 			int minGain=minValue(n,a,b).gainDiff;
 			if(node.gainDiff<minGain){
 				node.gainDiff=minGain;
@@ -55,6 +52,7 @@ public class homework{
 		}
 		node.gainDiff=Integer.MAX_VALUE;
 		for(Node n:node.childNodes){
+			n.getChildNodes();
 			int maxGain=maxValue(n,a,b).gainDiff;
 			if(node.gainDiff>maxGain){
 				node.gainDiff=maxGain;
@@ -73,9 +71,10 @@ public class homework{
 
 	public static Node abs(Node node){
 		int level=3;
-		if(N>14){
+		if(N>13){
 			level=2;
 		}
+
 		if(T<100){
 			level=1;
 		}
@@ -108,7 +107,6 @@ public class homework{
 
 class Node{
 	public char[][] state=null;
-	public byte[][] component=null;
 	public int[] lastChoice=null;
 	public int Gain=0;
 	public int gainDiff=0;
@@ -131,7 +129,7 @@ class Node{
 	}
 
 	public void getChildNodes(){
-		component=new byte[size][size];
+		byte[][] component=new byte[size][size];
 		this.childNodes=new ArrayList<Node>();
 		for(int i=0;i<size;i++){
 			for(int j=0;j<size;j++){
