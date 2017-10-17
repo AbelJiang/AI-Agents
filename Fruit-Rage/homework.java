@@ -72,12 +72,19 @@ public class homework{
 	}
 
 	public static Node abs(Node node){
-		levelControl(3, node);
+		int level=3;
+		if(N>14){
+			level=2;
+		}
+		if(T<100){
+			level=1;
+		}
+		levelControl(level, node);
 		return maxValue(node, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
 	public static void main(String[] args) throws IOException{
-		BufferedReader br=new BufferedReader(new FileReader("./input3.txt"));
+		BufferedReader br=new BufferedReader(new FileReader("./input.txt"));
 		N=Integer.parseInt(br.readLine());
 		P=Integer.parseInt(br.readLine());
 		T=Float.parseFloat(br.readLine());
@@ -120,12 +127,7 @@ class Node{
 
 	public Node(char[][] state){
 		this.size=state[0].length;
-		this.state=new char[size][size];
-		for(int i=0;i<size;i++){
-			for(int j=0;j<size;j++){
-				this.state[i][j]=state[i][j];
-			}
-		}
+		this.state=this.stateClone(state);
 	}
 
 	public void getChildNodes(){
@@ -137,9 +139,8 @@ class Node{
 					component[i][j]=-1;
 				}
 				if(component[i][j]!=-1){
-					Node node=new Node(size);
+					Node node=new Node(this.state);
 					node.parentNode=this;
-					node.state=this.stateClone(this.state);
 					node.lastChoice=new int[2];
 					node.lastChoice[0]=i;
 					node.lastChoice[1]=j;
@@ -254,13 +255,5 @@ class Node{
 		bw.write(Integer.toString(lastChoice[0]+1)+"\n");
 		bw.write(this.getString());
 		bw.close();
-
-		// for(int i=0;i<size;i++){
-		// 	for(int j=0;j<size;j++){
-		// 		System.out.print(state[i][j]+" ");
-		// 	}
-		// 	System.out.println();
-		// }
-		// System.out.println("Gain: "+this.Gain);
 	}
 }
