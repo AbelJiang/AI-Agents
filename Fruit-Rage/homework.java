@@ -27,6 +27,7 @@ public class homework{
 		}
 		Node retNode=null;
 		node.gainDiff=Integer.MIN_VALUE;
+		node.sortChild();
 		for(Node n:node.childNodes){
 			n.getChildNodes();
 			int minGain=minValue(n,a,b).gainDiff;
@@ -45,12 +46,12 @@ public class homework{
 	}
 
 	public static Node minValue(Node node, int a, int b){
-		
-		Node retNode=null;
 		if(terminalTest(node)){
 			return node;
 		}
+		Node retNode=null;
 		node.gainDiff=Integer.MAX_VALUE;
+		node.sortChildReverse();
 		for(Node n:node.childNodes){
 			n.getChildNodes();
 			int maxGain=maxValue(n,a,b).gainDiff;
@@ -71,13 +72,13 @@ public class homework{
 
 	public static Node abs(Node node){
 		int level=3;
-		if(N>13){
-			level=2;
-		}
+		// if(N>10){
+		// 	level=2;
+		// }
 
-		if(T<100){
-			level=1;
-		}
+		// if(T<50){
+		// 	level=2;
+		// }
 		levelControl(level, node);
 		return maxValue(node, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
@@ -111,6 +112,7 @@ class Node{
 	public int Gain=0;
 	public int gainDiff=0;
 	public boolean maxNode=true;
+	ArrayList<int[]> delMatrix=null;
 
 	public int size=0;
 	public Node parentNode=null;
@@ -131,6 +133,7 @@ class Node{
 	public void getChildNodes(){
 		byte[][] component=new byte[size][size];
 		this.childNodes=new ArrayList<Node>();
+		delMatrix=new ArrayList<int[]>();
 		for(int i=0;i<size;i++){
 			for(int j=0;j<size;j++){
 				if(state[i][j]=='*'){
@@ -157,7 +160,7 @@ class Node{
 		}
 	}
 
-	public void dfs(int x, int y, byte[][] component, Node node){
+	public void dfs(int x, int y, byte[][] component, Node node,){
 		component[x][y]=-1;
 		node.state[x][y]='X';
 		
@@ -205,12 +208,12 @@ class Node{
 	}
 
 	public void sortChild(){
-		Comparator<Node> comp=(Node a, Node b)->{return a.gainDiff-b.gainDiff;};
+		Comparator<Node> comp=(Node a, Node b)->{return a.Gain-b.Gain;};
 		Collections.sort(this.childNodes,comp);
 	}
 
 	public void sortChildReverse(){
-		Comparator<Node> comp=(Node a, Node b)->{return b.gainDiff-a.gainDiff;};
+		Comparator<Node> comp=(Node a, Node b)->{return b.Gain-a.Gain;};
 		Collections.sort(this.childNodes,comp);
 	}
 
