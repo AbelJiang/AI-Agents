@@ -84,7 +84,7 @@ public class homework{
 	}
 
 	public static void main(String[] args) throws IOException{
-		BufferedReader br=new BufferedReader(new FileReader("./input.txt"));
+		BufferedReader br=new BufferedReader(new FileReader("./input2.txt"));
 		N=Integer.parseInt(br.readLine());
 		P=Integer.parseInt(br.readLine());
 		T=Float.parseFloat(br.readLine());
@@ -103,8 +103,6 @@ public class homework{
 		
 		Node node=abs(InitNode);
 		node.print();
-
-		int k=2;
 	}
 }
 
@@ -135,6 +133,8 @@ class Node{
 	public void getChildNodes(){
 		byte[][] component=new byte[size][size];
 		this.childNodes=new ArrayList<Node>();
+		int maxGain=0;
+		Random generator=new Random();
 		for(int i=0;i<size;i++){
 			for(int j=0;j<size;j++){
 				if(state[i][j]=='*'){
@@ -149,14 +149,20 @@ class Node{
 					node.lastChoice[1]=j;
 					dfs(i,j,component,node);
 					node.Gain=node.Gain*node.Gain;
-					node.delCompo();
+					if(node.Gain>maxGain){
+						maxGain=node.Gain;
+					}
 
 					if(this.maxNode==true){
 						node.maxNode=false;
 					}else{
 						node.maxNode=true;
+					}
+
+					if(node.Gain>=maxGain){
+						node.delCompo();
+						this.childNodes.add(node);
 					}	
-					this.childNodes.add(node);
 				}
 			}
 		}
@@ -164,8 +170,7 @@ class Node{
 
 	public void dfs(int x, int y, byte[][] component, Node node){
 		component[x][y]=-1;
-		//node.state[x][y]='X';
-		node.delMatrix.add(new int[]{x,y});
+		node.state[x][y]='X';
 		
 		node.Gain++;
 		char type=state[x][y];
@@ -198,53 +203,16 @@ class Node{
 	}
 
 	public void delCompo(){
-		int count=0;
-		int flag=delMatrix.size();
-		while(flag!=0){
-			int x=delMatrix.get(0)[0];
-			int y=delMatrix.get(0)[1];
-
-			for(int j=x;j<size;j++){
-				if(delMContains(new int[]{j,y})){
-					count++;
-				}else{
-					break;
+		for(int i=0;i<size;i++){
+			for(int j=0;j<size;j++){
+				if(state[i][j]=='X'){
+					for(int k=0;k<i;k++){
+						state[i-k][j]=state[i-k-1][j];
+					}
+					state[0][j]='*';
 				}
-			}
-			int k=x-1;
-			for(;k>=0;k--){
-				if(delMContains(new int[]{k,y})){
-					count++;
-				}else{
-					break;
-				}
-			}
-			
-			if(k!=-1){
-				for(int q=k;q>=0;q--){
-					state[q+count][y]=state[q][y];
-				}
-				for(int p=0;p<count;p++){
-					state[p][y]='*';
-				}
-			}else{
-				for(int m=0;m<count;m++){
-					state[m][y]='*';
-				}
-			}
-			flag=delMatrix.size();
-			count=0;
-		}
-	}
-
-	public boolean delMContains(int[] a){
-		for(int m=0;m<delMatrix.size();m++){
-			if(delMatrix.get(m)[0]==a[0]&&delMatrix.get(m)[1]==a[1]){
-				delMatrix.remove(m);
-				return true;
 			}
 		}
-		return false;
 	}
 
 	public void sortChild(){
