@@ -71,20 +71,14 @@ public class homework{
 	}
 
 	public static Node abs(Node node){
-		int level=3;
-		// if(N>10){
-		// 	level=2;
-		// }
-
-		// if(T<50){
-		// 	level=2;
-		// }
+		int level=4;
+		
 		levelControl(level, node);
 		return maxValue(node, Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
 
 	public static void main(String[] args) throws IOException{
-		BufferedReader br=new BufferedReader(new FileReader("./input2.txt"));
+		BufferedReader br=new BufferedReader(new FileReader("./input.txt"));
 		N=Integer.parseInt(br.readLine());
 		P=Integer.parseInt(br.readLine());
 		T=Float.parseFloat(br.readLine());
@@ -149,7 +143,7 @@ class Node{
 					node.lastChoice[1]=j;
 					dfs(i,j,component,node);
 					node.Gain=node.Gain*node.Gain;
-					if(node.Gain>maxGain){
+					if(node.Gain>=maxGain){
 						maxGain=node.Gain;
 					}
 
@@ -160,6 +154,7 @@ class Node{
 					}
 
 					if(node.Gain>=maxGain){
+						maxGain++;
 						node.delCompo();
 						this.childNodes.add(node);
 					}	
