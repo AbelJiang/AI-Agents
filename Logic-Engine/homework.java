@@ -1,6 +1,8 @@
 import java.io.*;
 import java.util.*;
 
+import com.sun.net.httpserver.Authenticator.Success;
+
 public class homework{
 	public static void main(String[] args) throws IOException{
 		BufferedReader br=new BufferedReader(new FileReader("./input.txt"));
@@ -11,28 +13,67 @@ public class homework{
 		}
 		int KBCount=Integer.parseInt(br.readLine());
 		String[] KBArray=new String[KBCount];
-		ArrayList<String> KB=new ArrayList<>(KBCount);
-		ArrayList<String> newKB=new ArrayList<>(KBCount);
+		LinkedHashSet<Clause> KB=new LinkedHashSet<>();
+		LinkedHashSet<Clause> newKB=new LinkedHashSet<>();
+		LinkedHashSet<Clause> resolvents=new LinkedHashSet<>();
 		for(int j=0;j<KBCount;j++){
-			KBArray[j]=br.readLine();
-			KB.add(KBArray[j]);
-			newKB.add(KBArray[j]);
+			Clause x=new Clause(br.readLine());
+			KB.add(x);
 		}
+		br.close();
 
-		String a="~Apple(x,y,z)";
-		String[] predicate=a.split("\\(|,|\\)");
-		if(a.charAt(0)=='~'){
-			//positive=false;
-			predicate[0]=predicate[0].substring(1);
+		BufferedWriter bw=new BufferedWriter(new FileWriter("./output.txt"));
+		for(String query: queries){
+			resolvents.clear();
+			newKB.clear();
+			if(query.charAt(0)=='~'){
+				newKB.add(new Clause(query.substring(1)));
+			}else{
+				newKB.add(new Clause("~"+query));
+			}
+
+			boolean success=false;
+			int kbSize=0;
+			while(!success){
+				for(Clause c1:newKB){
+					for(Clause c2:KB){
+						success=Clause.resolve(c2,c1,resolvents);
+						if(success)
+							break;
+					}
+					if(success)
+						break;
+					for(Clause c3:newKB){
+						success=Clause.resolve(c3,c1,resolvents);
+						if(success)
+							break;
+					}
+					if(success)
+						break;
+				}
+				if(success)
+					break;
+				kbSize=newKB.size();
+				newKB.addAll(resolvents);
+				resolvents.clear();
+				if(kbSize==newKB.size())
+					break;	
+			}
+
+			if(success){
+				bw.write("True");
+			}else{
+				bw.write("False");
+			}
 		}
-		for(String i : predicate)
-			System.out.println(i+"end");
+		bw.close();
 	}
 
 }
 
 class Literal{
 	boolean positive=true;
+	boolean remove=false;
 	String[] predicate=null;
 
 	public Literal(String str){
@@ -59,7 +100,7 @@ class Literal{
 		for(String i:predicate){
 			sb.append(i);
         }
-        System.out.println(sb.toString());
+        System.out.print(sb.toString());
     }
 
 	@Override public boolean equals(Object o){
@@ -87,6 +128,7 @@ class Literal{
 }
 
 class Clause{
+	
 	LinkedHashSet<Literal> literals=null;
 
 	public Clause(String str){
@@ -117,20 +159,17 @@ class Clause{
 				return unifyVar(x,theta.get(y),theta);
 			}else{
                 theta.put(x,y);
-                //System.out.println(x+","+y);
 			}
 		}else if(Character.isLowerCase(y.charAt(0))){
 			if(theta.get(y)!=null){
 				return unifyVar(theta.get(y),x,theta);
 			}else{
                 theta.put(y,x);
-                //System.out.println(y+","+x);
 			}
 		}else{
 			if(!x.equals(y)){
                 theta.clear();
                 return false;
-                //System.out.println("fail!");
 			}
         }
         return true;
@@ -138,21 +177,21 @@ class Clause{
 
 	public static boolean resolve(Clause c1,Clause c2,LinkedHashSet<Clause> KB){
         HashMap<String, String> theta=new HashMap<>();
-        boolean sucess=true;
+        boolean success=true;
 		for(Literal i:c1.literals){
 			for(Literal j:c2.literals){
-                sucess=true;
+                success=true;
 				if((i.positive^j.positive)&&(i.predicate[0].equals(j.predicate[0]))){
                    
 					for(int k=1;k<i.predicate.length;k++){
 						String x=Character.isLowerCase(i.predicate[k].charAt(0))?i.predicate[k]+"1":i.predicate[k];                                              //need to modify here
 						String y=Character.isLowerCase(j.predicate[k].charAt(0))?j.predicate[k]+"2":j.predicate[k]; 										//Consider constant
 						if(!unifyVar(x,y,theta)){
-                            sucess=false;
+                            success=false;
                             break;
                         }
 					}
-					if(sucess){
+					if(success){
                         Clause c=new Clause();
 						for(Literal m:c1.literals){
 							if(!m.toString().equals(i.toString())){
@@ -185,7 +224,7 @@ class Clause{
                                 }
                                 c.add(l);
 							}		
-                        }
+						}
                         if(c.size()==0){
                             return true;
                         }else{
@@ -202,20 +241,19 @@ class Clause{
 
     public static Clause factoring(Clause c){
         HashMap<String, String> theta=new HashMap<>();
-        boolean sucess=true;
+        boolean success=true;
 
         for(Literal i: c.literals){
             for(Literal j:c.literals){
-                if((i.predicate!=null&&j.predicate!=null&&(i.positive==j.positive)&&(i.predicate[0].equals(j.predicate[0]))&&(!i.equals(j)))){
+                if((!i.remove&&!j.remove&&(i.positive==j.positive)&&(i.predicate[0].equals(j.predicate[0]))&&(!i.equals(j)))){
                      for(int k=1;k<i.predicate.length;k++){
                          if(!unifyVar(i.predicate[k],j.predicate[k],theta)){
-                             sucess=false;
-                             System.out.println("fail here!");
+                             success=false;
                              break;
                          }
                     }
-                    if(sucess){
-                        j.predicate=null;
+                    if(success){
+                        j.remove=true;
                         for(Literal m:c.literals){
                             if(m.predicate!=null){
                                 for(int k=1;k<m.predicate.length;k++){
@@ -239,7 +277,7 @@ class Clause{
         HashMap<String, String> asgnLet=new HashMap<>();
         char letter='a';
         for(Literal i:c.literals){
-           if(i.predicate!=null){
+           if(!i.remove){
                 for(int j=0;j<i.predicate.length;j++){
                     String k=i.predicate[j];
                     if(Character.isLowerCase(k.charAt(0))){
@@ -251,7 +289,9 @@ class Clause{
                     }
                 }
                 newC.add(i);
-           }
+           }else{
+			   i.remove=false;
+		   }
         }
         return newC;
     }
