@@ -61,9 +61,9 @@ public class homework{
 			}
 
 			if(success){
-				bw.write("True");
+				bw.write("TRUE\n");
 			}else{
-				bw.write("False");
+				bw.write("FALSE\n");
 			}
 		}
 		bw.close();
