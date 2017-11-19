@@ -29,69 +29,6 @@ public class homework{
 			System.out.println(i+"end");
 	}
 
-	public static boolean unify(String a, String b){
-		return true;
-	}
-
-	public static void resolve(String a, String b, ArrayList<String> resolvents){
-		boolean success=false;
-		String[] aLiterals=a.split(" \\| ");
-		String[] bLiterals=b.split(" \\| ");
-		for(int i=0;i<aLiterals.length;i++){
-			String l1=aLiterals[i];
-			for(int j=0;j<bLiterals.length;j++){
-				String l2=bLiterals[j];
-				if(unify(l1,l2)){
-					aLiterals[i]=null;
-					bLiterals[j]=null;
-					success=true;
-				}
-			}
-		}
-		if(success){
-			//resolvent=combine(aLiterals,bLiterals);
-		}
-		//process literal pairs
-		//resolve as much as we can
-		//if literal pair is not contradictory, skip. Otherwise, try unify.
-		//if same except ~, resolve
-		//unify succeded resolve
-		//do nothing is all failed to resolve
-	}
-
-	public static void resolution(ArrayList<String> KB, ArrayList<String> newKB, String alpha){
-		int flag=1;
-		ArrayList<String> resolvents=new ArrayList<>();
-		while(flag>0){
-			for(String i:KB){
-				for(String j:newKB){
-					resolve(i,j,resolvents);
-					//put this part in resolve
-					// String resolvent=resolve(i,j);
-					// if(resolvent.isEmpty()){
-					// 	System.out.println("True");
-					// 	flag=0;
-					// }else{
-					// 	resolvents.add(resolvent);
-					// }
-				}
-			}
-			if(flag!=1){
-				KB.addAll(newKB);
-			}
-			newKB.clear();
-			flag++;
-			for(String k:resolvents){
-				if(!KB.contains(k)){
-					KB.add(k);
-					newKB.add(k);
-				}
-			}
-			if(newKB.isEmpty()){
-				System.out.println("False");
-			}
-		}
-	}
 }
 
 class Literal{
@@ -104,7 +41,26 @@ class Literal{
 			positive=false;
 			predicate[0]=predicate[0].substring(1);
 		}
-	}
+    }
+    
+    public Literal(Literal l){
+        positive=l.positive;
+        predicate=new String[l.predicate.length];
+        for(int i=0;i<predicate.length;i++){
+			predicate[i]=l.predicate[i];
+		}
+    }
+    
+    public void print(){
+        StringBuilder sb=new StringBuilder();
+		if(!positive){
+			sb.append("~");
+		}
+		for(String i:predicate){
+			sb.append(i);
+        }
+        System.out.println(sb.toString());
+    }
 
 	@Override public boolean equals(Object o){
 		Literal literal=(Literal)o;
@@ -112,10 +68,9 @@ class Literal{
 			return false;
 		if(predicate.length!=literal.predicate.length)
 			return false;
-		for(int i=0;i<predicate.length;i++){
-			if(!predicate[i].equals(literal.predicate[i]))
-				return false;
-		}
+        if(hashCode()!=literal.hashCode())
+            return false;
+
 		return true;
 	}
 
@@ -132,28 +87,190 @@ class Literal{
 }
 
 class Clause{
-	String[] subs=new String[26];
-	ArrayList<Literal> literals=null;
+	LinkedHashSet<Literal> literals=null;
 
 	public Clause(String str){
 		String[] litStr=str.split(" \\| ");
-		literals=new ArrayList<>();
+		literals=new LinkedHashSet<>();
 		for(int i=0;i<litStr.length;i++){
 			literals.add(new Literal(litStr[i]));
 		}
+    }
+    
+    public Clause(){
+        literals=new LinkedHashSet<>();
+    }
+
+    public int size(){
+        return literals.size();
+    }
+	public void add(Literal l){
+		literals.add(l);
 	}
 
-	public void Substitute(String str){
-
+	public static boolean unifyVar(String x, String y, HashMap<String, String> theta){
+		if(x.equals(y)) return true;
+		if(Character.isLowerCase(x.charAt(0))){
+			if(theta.get(x)!=null){
+				return unifyVar(theta.get(x),y,theta);
+			}else if(theta.get(y)!=null){
+				return unifyVar(x,theta.get(y),theta);
+			}else{
+                theta.put(x,y);
+                //System.out.println(x+","+y);
+			}
+		}else if(Character.isLowerCase(y.charAt(0))){
+			if(theta.get(y)!=null){
+				return unifyVar(theta.get(y),x,theta);
+			}else{
+                theta.put(y,x);
+                //System.out.println(y+","+x);
+			}
+		}else{
+			if(!x.equals(y)){
+                theta.clear();
+                return false;
+                //System.out.println("fail!");
+			}
+        }
+        return true;
 	}
 
-	public void resolve(Clause c){
-		for(Literal i:literals){
-			for(Literal j:c.literals){
-				if(i.positive^j.positive&&i.predicate[0]==j.predicate[0]){
-					
+	public static boolean resolve(Clause c1,Clause c2,LinkedHashSet<Clause> KB){
+        HashMap<String, String> theta=new HashMap<>();
+        boolean sucess=true;
+		for(Literal i:c1.literals){
+			for(Literal j:c2.literals){
+                sucess=true;
+				if((i.positive^j.positive)&&(i.predicate[0].equals(j.predicate[0]))){
+                   
+					for(int k=1;k<i.predicate.length;k++){
+						String x=Character.isLowerCase(i.predicate[k].charAt(0))?i.predicate[k]+"1":i.predicate[k];                                              //need to modify here
+						String y=Character.isLowerCase(j.predicate[k].charAt(0))?j.predicate[k]+"2":j.predicate[k]; 										//Consider constant
+						if(!unifyVar(x,y,theta)){
+                            sucess=false;
+                            break;
+                        }
+					}
+					if(sucess){
+                        Clause c=new Clause();
+						for(Literal m:c1.literals){
+							if(!m.toString().equals(i.toString())){
+                                Literal l=new Literal(m);
+								for(int k=1;k<m.predicate.length;k++){
+									if(Character.isLowerCase(m.predicate[k].charAt(0))){
+										String x=m.predicate[k]+"1";
+										while(theta.get(x)!=null){
+											x=theta.get(x);
+										}
+										l.predicate[k]=x;
+									}
+                                }
+                                c.add(l);
+                                
+							}	
+							
+						}
+						for(Literal n:c2.literals){
+							if(!n.toString().equals(j.toString())){
+								Literal l=new Literal(n);
+								for(int k=1;k<n.predicate.length;k++){
+									if(Character.isLowerCase(n.predicate[k].charAt(0))){
+										String x=n.predicate[k]+"1";
+										while(theta.get(x)!=null){
+											x=theta.get(x);
+										}
+										l.predicate[k]=x;			
+									}
+                                }
+                                c.add(l);
+							}		
+                        }
+                        if(c.size()==0){
+                            return true;
+                        }else{
+                            c=factoring(c);
+                            KB.add(c);
+                            theta.clear();
+                        }	
+					}
 				}
 			}
-		}
-	}
+        }
+        return false;
+    }
+
+    public static Clause factoring(Clause c){
+        HashMap<String, String> theta=new HashMap<>();
+        boolean sucess=true;
+
+        for(Literal i: c.literals){
+            for(Literal j:c.literals){
+                if((i.predicate!=null&&j.predicate!=null&&(i.positive==j.positive)&&(i.predicate[0].equals(j.predicate[0]))&&(!i.equals(j)))){
+                     for(int k=1;k<i.predicate.length;k++){
+                         if(!unifyVar(i.predicate[k],j.predicate[k],theta)){
+                             sucess=false;
+                             System.out.println("fail here!");
+                             break;
+                         }
+                    }
+                    if(sucess){
+                        j.predicate=null;
+                        for(Literal m:c.literals){
+                            if(m.predicate!=null){
+                                for(int k=1;k<m.predicate.length;k++){
+                                    if(Character.isLowerCase(m.predicate[k].charAt(0))){
+                                        String x=m.predicate[k];
+                                        while(theta.get(x)!=null){
+                                            x=theta.get(x);
+                                        }
+                                        m.predicate[k]=x;
+                                    }
+                                }
+                            }   
+                        }
+                        theta.clear();
+                    }
+                }
+            }
+            
+        }
+        Clause newC=new Clause();
+        HashMap<String, String> asgnLet=new HashMap<>();
+        char letter='a';
+        for(Literal i:c.literals){
+           if(i.predicate!=null){
+                for(int j=0;j<i.predicate.length;j++){
+                    String k=i.predicate[j];
+                    if(Character.isLowerCase(k.charAt(0))){
+                        if(!asgnLet.containsKey(k)){
+                            asgnLet.put(k,Character.toString(letter));
+                            letter++;
+                        }
+                        i.predicate[j]=asgnLet.get(k);
+                    }
+                }
+                newC.add(i);
+           }
+        }
+        return newC;
+    }
+
+    @Override public boolean equals(Object o){
+        Clause c=(Clause)o;
+        return hashCode()==c.hashCode();
+    }
+    
+    @Override public int hashCode() {
+        ArrayList<Integer> lid=new ArrayList<>();
+        for(Literal i:literals){
+            lid.add(i.hashCode());
+        }
+        Collections.sort(lid);
+        StringBuilder sb=new StringBuilder();
+        for(int i: lid){
+            sb.append(i);
+        } 
+        return sb.toString().hashCode();
+    }
 }
