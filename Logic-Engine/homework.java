@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 
-import com.sun.net.httpserver.Authenticator.Success;
 
 public class homework{
 	public static void main(String[] args) throws IOException{
@@ -55,6 +54,8 @@ public class homework{
 					break;
 				kbSize=newKB.size();
 				newKB.addAll(resolvents);
+				//System.out.println(kbSize+" "+newKB.size());
+				//System.out.println(newKB.size());
 				resolvents.clear();
 				if(kbSize==newKB.size())
 					break;	
@@ -65,6 +66,10 @@ public class homework{
 			}else{
 				bw.write("FALSE\n");
 			}
+
+			// for(Clause c:newKB){
+			// 	c.print();
+			// }
 		}
 		bw.close();
 	}
@@ -175,7 +180,7 @@ class Clause{
         return true;
 	}
 
-	public static boolean resolve(Clause c1,Clause c2,LinkedHashSet<Clause> KB){
+	public static boolean resolve(Clause c1,Clause c2,LinkedHashSet<Clause> KB){	
         HashMap<String, String> theta=new HashMap<>();
         boolean success=true;
 		for(Literal i:c1.literals){
@@ -195,6 +200,7 @@ class Clause{
                         Clause c=new Clause();
 						for(Literal m:c1.literals){
 							if(!m.toString().equals(i.toString())){
+								// m.print();
                                 Literal l=new Literal(m);
 								for(int k=1;k<m.predicate.length;k++){
 									if(Character.isLowerCase(m.predicate[k].charAt(0))){
@@ -204,7 +210,7 @@ class Clause{
 										}
 										l.predicate[k]=x;
 									}
-                                }
+								}
                                 c.add(l);
                                 
 							}	
@@ -228,7 +234,11 @@ class Clause{
                         if(c.size()==0){
                             return true;
                         }else{
-                            c=factoring(c);
+							// System.out.print("before:");
+							// c.print();
+							c=factoring(c);
+							// System.out.print("after:");
+							// c.print();
                             KB.add(c);
                             theta.clear();
                         }	
@@ -241,10 +251,11 @@ class Clause{
 
     public static Clause factoring(Clause c){
         HashMap<String, String> theta=new HashMap<>();
-        boolean success=true;
+		boolean success=true;
 
         for(Literal i: c.literals){
             for(Literal j:c.literals){
+				success=true;
                 if((!i.remove&&!j.remove&&(i.positive==j.positive)&&(i.predicate[0].equals(j.predicate[0]))&&(!i.equals(j)))){
                      for(int k=1;k<i.predicate.length;k++){
                          if(!unifyVar(i.predicate[k],j.predicate[k],theta)){
@@ -272,7 +283,8 @@ class Clause{
                 }
             }
             
-        }
+		}
+		
         Clause newC=new Clause();
         HashMap<String, String> asgnLet=new HashMap<>();
         char letter='a';
@@ -294,7 +306,15 @@ class Clause{
 		   }
         }
         return newC;
-    }
+	}
+	
+	public void print(){
+		for(Literal i: literals){
+			i.print();
+			System.out.print(" ");
+		}
+		System.out.println();
+	}
 
     @Override public boolean equals(Object o){
         Clause c=(Clause)o;
